@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import List
 
 from pandas import DataFrame
 from numpy import NaN
@@ -24,14 +25,14 @@ class Board:
         self.x_is_datetime = x_is_datetime
 
     @property
-    def size(self):
+    def size(self) -> int:
         return len(self.df.index)
 
-    def get_y(self, x, side: Side):
+    def get_y(self, x, side: Side) -> float:
         return self.df.loc[x, side]
 
     @lru_cache
-    def get_pivots(self, side: Side):
+    def get_pivots(self, side: Side) -> List[int]:
         repetitive = self.df[self.df[side].shift() == self.df[side]].index
 
         df = self.df.drop(repetitive)
@@ -64,9 +65,9 @@ class Board:
         return pivots
 
     @staticmethod
-    def _is_high(values):
+    def _is_high(values) -> bool:
         return values.iat[1] > values.iat[0] and values.iat[1] > values.iat[2]
 
     @staticmethod
-    def _is_low(values):
+    def _is_low(values) -> bool:
         return values.iat[1] < values.iat[0] and values.iat[1] < values.iat[2]
