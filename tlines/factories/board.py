@@ -39,8 +39,6 @@ class BoardFactory:
             .set_index("x")
         )
 
-        print(df)
-
         df = df.merge(
             low_series.to_frame(Side.LOW), how="left", left_index=True, right_index=True
         )

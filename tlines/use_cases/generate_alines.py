@@ -54,7 +54,7 @@ class GenerateALines:
             for line in lines:
                 yield ALine(
                     side=side,
-                    a=line.a * (self.board.y_step / self.board.x_step),
+                    a=line.a * self.board.x_step / self.board.y_step,
                     b=line.b * self.board.y_step + self.board.y_start,
                 )
 
