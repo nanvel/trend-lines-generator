@@ -5,6 +5,7 @@ from pandas import DataFrame
 from numpy import NaN
 
 from .side import Side
+from .time import Time
 
 
 class Board:
@@ -30,6 +31,12 @@ class Board:
 
     def get_y(self, x, side: Side) -> float:
         return self.df.loc[x, side]
+
+    def translate(self, x, y):
+        x = x * self.x_step + self.x_start
+        if self.x_is_datetime:
+            x = Time(x).to_datetime()
+        return x, y * self.y_step + self.y_start
 
     @lru_cache
     def get_pivots(self, side: Side) -> List[int]:

@@ -4,7 +4,7 @@ from numpy import NaN
 from pandas import DataFrame, to_datetime
 
 from tlines.factories import BoardFactory
-from tlines.models import Side, Time
+from tlines.models import Side
 from tlines.use_cases.generate_alines import GenerateALines
 
 
@@ -17,7 +17,7 @@ def main():
         ("low", "float64"),
         ("close", "float64"),
     ]
-    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=BTC_USDT&interval=1h&limit=200"
+    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=BTC_USDT&interval=1d&limit=200"
     response = requests.get(url)
 
     rows = response.json()
@@ -36,13 +36,7 @@ def main():
         pivots = board.get_pivots(side=side)
         key = f"{side}_pivots"
         df[key] = NaN
-        for x, y in (
-            (
-                Time(p * board.x_step + board.x_start).to_datetime(),
-                board.get_y(p, side=side) * board.y_step + board.y_start,
-            )
-            for p in pivots
-        ):
+        for x, y in (board.translate(p, board.get_y(p, side=side)) for p in pivots):
             df.loc[x, key] = y
 
     ap = [
@@ -65,8 +59,6 @@ def main():
     x1 = df.index[0]
     x2 = df.index[-1]
 
-    print([((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in alines])
-
     mpf.plot(
         df,
         type="candle",
@@ -74,8 +66,6 @@ def main():
         tight_layout=True,
         alines=[((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in alines],
     )
-
-    print(list(alines))
 
 
 if __name__ == "__main__":

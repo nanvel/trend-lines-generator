@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pandas import Series
 
-from tlines.models import ALine, ALineCandidate, Board, Side
+from tlines.models import ALine, ALineCandidate, Board, Side, Time
 
 
 class GenerateALines:
@@ -52,10 +52,19 @@ class GenerateALines:
                 lines = [line for line in lines if abs(line.angle) > self.min_angle]
 
             for line in lines:
+                x1, y1 = self.board.translate(line.x1, line.y1)
+                x2, y2 = self.board.translate(line.x2, line.y2)
+
+                x1 = Time.from_datetime(x1)
+                x2 = Time.from_datetime(x2)
+
+                a = (y2 - y1) / (x2 - x1)
+                b = y2 - a * x2
+
                 yield ALine(
                     side=side,
-                    a=line.a * self.board.x_step / self.board.y_step,
-                    b=line.b * self.board.y_step + self.board.y_start,
+                    a=a,
+                    b=b,
                 )
 
     def _filter_lines(self, lines, side: Side):
@@ -110,7 +119,7 @@ class GenerateALines:
                     max_diff = (
                         self.board.size / 2
                         if current_y < line_y
-                        else self.board.size / 10
+                        else self.board.size / 5
                     )
                 if abs(line_y - current_y) > max_diff:
                     continue
