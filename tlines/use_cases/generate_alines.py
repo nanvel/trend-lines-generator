@@ -1,5 +1,3 @@
-import math
-from statistics import median
 from typing import List
 
 import numpy as np
@@ -35,7 +33,7 @@ class GenerateALines:
 
     def __call__(self):
         for side in [Side.LOW, Side.HIGH]:
-            lines = self._cluster(
+            lines = self._cluster_lines(
                 lines=list(
                     self._filter_lines(
                         lines=self._suggest_lines(
@@ -71,17 +69,17 @@ class GenerateALines:
                 continue
 
             for x, y in self.pivots[side]:
-                if abs(y - line.get_y(x)) <= self.band:
-                    line.pivots.add(x)
-            if len(line.pivots) >= 3:
-                for x, y in self.pivots[side.opposite(side)]:
-                    if abs(y - line.get_y(x)) <= self.band:
-                        line.pivots_extra.add(x)
+                distance = abs(line.get_distance(x, y))
+                if distance <= self.band:
+                    line.pivots.append((x, distance))
 
-                line.distance = self._distance(line=line, pivots=line.pivots)
-                line.distance_extra = self._distance(
-                    line=line, pivots=line.pivots_extra
-                )
+            if len(line.pivots) > 2:
+                for x, y in self.pivots[side.opposite(side)]:
+                    distance = abs(line.get_distance(x, y))
+                    if distance <= self.band:
+                        line.pivots_opposite.append((x, distance))
+
+                line.quality = self._quality(line=line)
 
                 seen.add(key)
 
@@ -106,51 +104,39 @@ class GenerateALines:
                 )
 
                 line_y = line.get_y(self.board.size - 1)
-                if side == Side.LOW:
-                    max_diff = (
-                        self.board.size / 2
-                        if current_y > line_y
-                        else self.board.size / 10
-                    )
-                else:
-                    max_diff = (
-                        self.board.size / 2
-                        if current_y < line_y
-                        else self.board.size / 5
-                    )
-                if abs(line_y - current_y) > max_diff:
+                if abs(line_y - current_y) > self.board.size / 2:
                     continue
 
                 yield line
 
-    def _cluster(self, lines: List[ALineCandidate]):
+    def _cluster_lines(self, lines: List[ALineCandidate]):
         to_remove = set()
-        sizes = []
-        for line in lines:
-            sizes.append(len(line.pivots))
-        median_size = median(sizes)
-
         for i in range(len(lines) - 1):
+            pivots_i = {a for a, _ in lines[i].pivots}
             for j in range(i + 1, len(lines)):
-                if len(lines[i].pivots & lines[j].pivots) >= 2:
-                    si = len(lines[i].pivots) / median_size
-                    sj = len(lines[j].pivots) / median_size
-                    qi = lines[i].distance + lines[i].distance_extra / 4
-                    qj = lines[j].distance + lines[j].distance_extra / 4
-                    if si * qi > sj * qj:
-                        to_remove.add(i)
-                    else:
+                pivots_j = {a for a, _ in lines[j].pivots}
+                if len(pivots_i & pivots_j) >= 2:
+                    if lines[i].quality > lines[j].quality:
                         to_remove.add(j)
+                    else:
+                        to_remove.add(i)
 
         return [line for n, line in enumerate(lines) if n not in to_remove]
 
-    def _distance(self, line: ALineCandidate, pivots: List[int]):
-        """How far the dots from the line."""
+    def _quality(self, line: ALineCandidate):
         distances = []
-        for pivot in pivots:
-            distances.append(
-                line.get_distance(pivot, self.board.get_y(pivot, side=line.side))
-            )
-        if len(distances) == 1:
-            return distances[0]
-        return math.sqrt(sum([d * d for d in distances]))
+        for pivot, distance in line.pivots:
+            distances.append(distance)
+        for pivot, distance in line.pivots_opposite:
+            distances.append(distance + self.band)
+
+        distances = list(sorted(distances))[2:]
+        q = 0.0
+        min_distance = self.band / 10.0
+        for n, distance in enumerate(distances):
+            if distance < min_distance:
+                distance = min_distance
+
+            q += self.band / distance / (2**n)
+
+        return q

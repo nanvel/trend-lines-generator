@@ -38,10 +38,9 @@ class ALineCandidate:
         self.a = (y2 - y1) / (x2 - x1)
         self.b = y2 - self.a * x2
 
-        self.pivots = set()
-        self.pivots_extra = set()
-        self.distance: float = 0
-        self.distance_extra: float = 0
+        self.pivots = []
+        self.pivots_opposite = []
+        self.quality: float = 0
 
     @cached_property
     def angle_rad(self):
