@@ -1,8 +1,8 @@
-from tlines.models import ALine, ALineCandidate, Side
+from tlines.models import Line, LineCandidate, Side
 
 
 def test_aline_candidate():
-    line = ALineCandidate(
+    line = LineCandidate(
         side=Side.LOW,
         x1=1,
         y1=1,
@@ -20,6 +20,6 @@ def test_aline_candidate():
 
 
 def test_aline():
-    line = ALine(side=Side.LOW, a=1, b=1)
+    line = Line(side=Side.LOW, a=1, b=1)
 
     assert line.get_y(10) == 11

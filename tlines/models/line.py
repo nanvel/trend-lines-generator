@@ -9,7 +9,7 @@ from .time import Time
 
 
 @dataclass(frozen=True)
-class ALine:
+class Line:
     side: Side
     a: float
     b: float
@@ -19,8 +19,12 @@ class ALine:
             x = Time.from_datetime(x)
         return self.a * x + self.b
 
+    @property
+    def is_horizontal(self) -> bool:
+        return not self.a
 
-class ALineCandidate:
+
+class LineCandidate:
     def __init__(
         self,
         side: Side,
@@ -54,9 +58,13 @@ class ALineCandidate:
         return self.a * x + self.b
 
     def get_x(self, y: float) -> float:
+        if self.a == 0:
+            return self.x2
         return (y - self.b) / self.a
 
     def get_distance(self, x: int, y: float):
+        if self.angle_rad == 0:
+            return abs(y - self.get_y(x))
         return (x - self.get_x(y)) * math.sin(self.angle_rad)
 
     def __str__(self):
