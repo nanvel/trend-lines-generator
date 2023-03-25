@@ -1,6 +1,8 @@
-from typing import List, Optional
+import math
+from statistics import median
+from typing import List
 
-from pandas import Series
+import numpy as np
 
 from tlines.models import ALine, ALineCandidate, Board, Side, Time
 
@@ -9,18 +11,15 @@ class GenerateALines:
     def __init__(
         self,
         board: Board,
-        max_angle: float = 60.0,
-        min_angle: Optional[float] = 10.0,
         min_pivot_distance: float = 0.1,
     ):
         self.board = board
-        self.max_angle = max_angle
-        self.min_angle = min_angle
         self.min_pivot_distance = min_pivot_distance
 
-        self.max_y_distance = max(
-            board.df[Side.LOW].diff().abs().median(),
-            board.df[Side.HIGH].diff().abs().median(),
+        # median distance between points
+        self.band = max(
+            np.sqrt(1 + np.square(board.df[Side.LOW].diff())).median(),
+            np.sqrt(1 + np.square(board.df[Side.HIGH].diff())).median(),
         )
 
         self.pivots = {
@@ -48,9 +47,6 @@ class GenerateALines:
                 )
             )
 
-            if self.min_angle is not None:
-                lines = [line for line in lines if abs(line.angle) > self.min_angle]
-
             for line in lines:
                 x1, y1 = self.board.translate(line.x1, line.y1)
                 x2, y2 = self.board.translate(line.x2, line.y2)
@@ -75,14 +71,17 @@ class GenerateALines:
                 continue
 
             for x, y in self.pivots[side]:
-                if abs(y - line.get_y(x)) <= self.max_y_distance:
+                if abs(y - line.get_y(x)) <= self.band:
                     line.pivots.add(x)
             if len(line.pivots) >= 3:
                 for x, y in self.pivots[side.opposite(side)]:
-                    if abs(y - line.get_y(x)) <= self.max_y_distance:
+                    if abs(y - line.get_y(x)) <= self.band:
                         line.pivots_extra.add(x)
 
-                line.contrast = self._contrast(line=line)
+                line.distance = self._distance(line=line, pivots=line.pivots)
+                line.distance_extra = self._distance(
+                    line=line, pivots=line.pivots_extra
+                )
 
                 seen.add(key)
 
@@ -105,8 +104,6 @@ class GenerateALines:
                     x2=p2,
                     y2=self.board.get_y(p2, side=side),
                 )
-                if abs(line.angle) > self.max_angle:
-                    continue
 
                 line_y = line.get_y(self.board.size - 1)
                 if side == Side.LOW:
@@ -128,28 +125,32 @@ class GenerateALines:
 
     def _cluster(self, lines: List[ALineCandidate]):
         to_remove = set()
+        sizes = []
+        for line in lines:
+            sizes.append(len(line.pivots))
+        median_size = median(sizes)
+
         for i in range(len(lines) - 1):
             for j in range(i + 1, len(lines)):
                 if len(lines[i].pivots & lines[j].pivots) >= 2:
-                    if len(lines[i].pivots) > len(lines[j].pivots):
-                        to_remove.add(j)
-                    elif len(lines[i].pivots) < len(lines[j].pivots):
+                    si = len(lines[i].pivots) / median_size
+                    sj = len(lines[j].pivots) / median_size
+                    qi = lines[i].distance + lines[i].distance_extra / 4
+                    qj = lines[j].distance + lines[j].distance_extra / 4
+                    if si * qi > sj * qj:
                         to_remove.add(i)
-                    elif len(lines[i].pivots_extra) > len(lines[j].pivots_extra):
+                    else:
                         to_remove.add(j)
-                    elif len(lines[i].pivots_extra) < len(lines[j].pivots_extra):
-                        to_remove.add(i)
-                    elif lines[i].contrast < lines[j].contrast:
-                        to_remove.add(j)
-                    elif lines[i].contrast > lines[j].contrast:
-                        to_remove.add(i)
 
         return [line for n, line in enumerate(lines) if n not in to_remove]
 
-    def _contrast(self, line: ALineCandidate):
-        line_prices = Series([line.get_y(i) for i in self.board.df.index])
-        if line.side == Side.LOW:
-            s = self.board.df["low"] - line_prices
-        else:
-            s = line_prices - self.board.df["high"]
-        return s[s < 0].abs().sum() / s[s >= 0].sum()
+    def _distance(self, line: ALineCandidate, pivots: List[int]):
+        """How far the dots from the line."""
+        distances = []
+        for pivot in pivots:
+            distances.append(
+                line.get_distance(pivot, self.board.get_y(pivot, side=line.side))
+            )
+        if len(distances) == 1:
+            return distances[0]
+        return math.sqrt(sum([d * d for d in distances]))

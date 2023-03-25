@@ -1,6 +1,7 @@
 import datetime
 import math
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Union
 
 from .side import Side
@@ -39,14 +40,25 @@ class ALineCandidate:
 
         self.pivots = set()
         self.pivots_extra = set()
-        self.contrast = None
+        self.distance: float = 0
+        self.distance_extra: float = 0
+
+    @cached_property
+    def angle_rad(self):
+        return math.atan((self.y2 - self.y1) / (self.x2 - self.x1))
 
     @property
     def angle(self):
-        return math.atan((self.y2 - self.y1) / (self.x2 - self.x1)) * 180 / math.pi
+        return self.angle_rad * 180 / math.pi
 
     def get_y(self, x: int) -> float:
         return self.a * x + self.b
+
+    def get_x(self, y: float) -> float:
+        return (y - self.b) / self.a
+
+    def get_distance(self, x: int, y: float):
+        return (x - self.get_x(y)) * math.sin(self.angle_rad)
 
     def __str__(self):
         return f"ALine[{int(self.x1)},{self.y1:.2f} {int(self.x2)},{self.y2:.2f} a{int(self.angle)}]"
