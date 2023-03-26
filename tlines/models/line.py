@@ -13,6 +13,8 @@ class Line:
     side: Side
     a: float
     b: float
+    width: float
+    x_start: int
 
     def get_y(self, x: Union[int, datetime.datetime]):
         if isinstance(x, datetime.datetime):

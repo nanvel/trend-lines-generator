@@ -1,8 +1,10 @@
+import math
 from typing import List
 
 import numpy as np
 
 from tlines.models import Line, LineCandidate, Board, Side, Time
+from tlines.utils import find_significant
 
 
 class GenerateALines:
@@ -101,10 +103,23 @@ class GenerateALines:
                 a = (y2 - y1) / (x2 - x1)
                 b = y2 - a * x2
 
+                x_start = (
+                    list(
+                        sorted(line.pivots + line.pivots_opposite, key=lambda p: p[0])
+                    )[0][0]
+                    * self.board.x_step
+                    + self.board.x_start
+                )
+
+                distances = [i[1] ** 2 for i in line.pivots + line.pivots_opposite]
+                width = math.sqrt(sum(distances) / len(distances))
+
                 yield Line(
                     side=side,
                     a=a,
                     b=b,
+                    width=width * self.board.y_step,
+                    x_start=x_start,
                 )
 
     def _filter_lines(self, lines, side: Side, min_pivots):
@@ -152,18 +167,30 @@ class GenerateALines:
                 )
 
                 line_y = line.get_y(self.board.size - 1)
-                if abs(line_y - current_y) > self.board.size / 2:
+                if abs(line_y - current_y) > self.board.size:
                     continue
 
                 yield line
 
     def _suggest_hlines(self, pivots: List[int], side: Side):
+        significant = find_significant(
+            start=self.board.y_start,
+            stop=self.board.y_start + self.board.y_step * self.board.size,
+        )
+        significant = [
+            (s - self.board.y_start) / self.board.y_step for s in significant
+        ]
+
         current_y = self.board.get_y(self.board.df.index[-1], side=side)
         for pivot in pivots:
             y = self.board.get_y(pivot, side=side)
 
-            if abs(y - current_y) > self.board.size / 2:
+            if abs(y - current_y) > self.board.size:
                 continue
+
+            for s in significant:
+                if abs(s - y) <= self.band:
+                    continue
 
             yield LineCandidate(
                 side=side,
@@ -172,6 +199,17 @@ class GenerateALines:
                 x2=self.board.size,
                 y2=y,
             )
+
+        for s in significant:
+            line = LineCandidate(
+                side=side,
+                x1=0,
+                y1=s,
+                x2=self.board.size,
+                y2=s,
+            )
+            line.pivots.append((0, 0))
+            yield line
 
     def _quality(self, line: LineCandidate):
         distances = []

@@ -5,7 +5,7 @@ from pandas import DataFrame, to_datetime
 
 from tlines.factories import BoardFactory
 from tlines.models import Side
-from tlines.use_cases.generate_alines import GenerateALines
+from tlines.use_cases.generate_lines import GenerateALines
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
         ("low", "float64"),
         ("close", "float64"),
     ]
-    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=DOGE_USDT&interval=1d&limit=100"
+    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=XRP_USDT&interval=1h&limit=100"
     response = requests.get(url)
 
     rows = response.json()
@@ -30,7 +30,7 @@ def main():
     df.index = to_datetime(df.index, unit="s")
 
     board = BoardFactory().from_series(low_series=df["low"], high_series=df["high"])
-    alines = list(GenerateALines(board=board)())
+    lines = list(GenerateALines(board=board)())
 
     for side in (Side.LOW, Side.HIGH):
         pivots = board.get_pivots(side=side)
@@ -64,7 +64,7 @@ def main():
         type="candle",
         addplot=ap,
         tight_layout=True,
-        alines=[((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in alines],
+        alines=[((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in lines],
     )
 
 
