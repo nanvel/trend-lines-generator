@@ -2,6 +2,7 @@
 
 Usage example:
 ```python
+#! pip install trend-lines-generator
 import requests
 import mplfinance as mpf
 from pandas import DataFrame, to_datetime
