@@ -14,7 +14,7 @@ def main():
         ("low", "float64"),
         ("close", "float64"),
     ]
-    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=MOVR_USDT&interval=1h&limit=100"
+    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=BTC_USDT&interval=1d&limit=100"
     response = requests.get(url)
 
     rows = response.json()

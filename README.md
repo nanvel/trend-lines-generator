@@ -50,3 +50,5 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+![trend lines](https://github.com/nanvel/trend-lines/raw/master/docs/trend_lines.png)
