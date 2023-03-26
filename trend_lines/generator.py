@@ -3,11 +3,11 @@ from typing import List
 
 import numpy as np
 
-from tlines.models import Line, LineCandidate, Board, Side, Time
-from tlines.utils import find_significant
+from .models import Board, Line, LineCandidate, Side, Time
+from .utils import find_significant
 
 
-class GenerateALines:
+class Generator:
     def __init__(self, board: Board):
         self.board = board
 
@@ -29,6 +29,9 @@ class GenerateALines:
         }
 
     def __call__(self):
+        return list(self._call())
+
+    def _call(self):
         for side in [Side.LOW, Side.HIGH]:
             hlines = list(
                 self._filter_lines(
@@ -95,8 +98,9 @@ class GenerateALines:
         x1, y1 = self.board.translate(line.x1, line.y1)
         x2, y2 = self.board.translate(line.x2, line.y2)
 
-        x1 = Time.from_datetime(x1)
-        x2 = Time.from_datetime(x2)
+        if self.board.x_is_datetime:
+            x1 = Time.from_datetime(x1)
+            x2 = Time.from_datetime(x2)
 
         a = (y2 - y1) / (x2 - x1)
         b = y2 - a * x2

@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
-from tlines.factories import BoardFactory
-from tlines.models import Side
+from trend_lines.factories import BoardFactory
+from trend_lines.models import Side
 
 
 def test_from_series():

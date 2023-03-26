@@ -1,7 +1,7 @@
 import pytest
 from pandas import DataFrame
 
-from tlines.models import Board, Side
+from trend_lines.models import Board, Side
 
 
 @pytest.fixture

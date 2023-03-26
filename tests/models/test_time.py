@@ -1,6 +1,6 @@
 import datetime
 
-from tlines.models import Time
+from trend_lines.models import Time
 
 
 def test_time():

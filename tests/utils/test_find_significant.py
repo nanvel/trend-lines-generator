@@ -1,4 +1,4 @@
-from tlines.utils import find_significant
+from trend_lines.utils import find_significant
 
 
 def test_find_significant():

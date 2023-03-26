@@ -3,7 +3,7 @@ import datetime
 from pandas import DataFrame, Series
 from numpy import NaN
 
-from tlines.models import Board, Side
+from ..models import Board, Side
 
 
 class BoardFactory:

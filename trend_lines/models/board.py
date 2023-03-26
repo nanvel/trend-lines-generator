@@ -1,8 +1,8 @@
 from functools import lru_cache
 from typing import List
 
-from pandas import DataFrame
 from numpy import NaN
+from pandas import DataFrame
 
 from .side import Side
 from .time import Time

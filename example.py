@@ -1,11 +1,8 @@
 import requests
 import mplfinance as mpf
-from numpy import NaN
 from pandas import DataFrame, to_datetime
 
-from tlines.factories import BoardFactory
-from tlines.models import Side
-from tlines.use_cases.generate_lines import GenerateALines
+from trend_lines import generate_trend_lines, Side
 
 
 def main():
@@ -17,7 +14,7 @@ def main():
         ("low", "float64"),
         ("close", "float64"),
     ]
-    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=DASH_USDT&interval=1h&limit=100"
+    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=MOVR_USDT&interval=1h&limit=100"
     response = requests.get(url)
 
     rows = response.json()
@@ -29,32 +26,7 @@ def main():
     )
     df.index = to_datetime(df.index, unit="s")
 
-    board = BoardFactory().from_series(low_series=df["low"], high_series=df["high"])
-    lines = list(GenerateALines(board=board)())
-
-    for side in (Side.LOW, Side.HIGH):
-        pivots = board.get_pivots(side=side)
-        key = f"{side}_pivots"
-        df[key] = NaN
-        for x, y in (board.translate(p, board.get_y(p, side=side)) for p in pivots):
-            df.loc[x, key] = y
-
-    ap = [
-        mpf.make_addplot(
-            df["low_pivots"],
-            panel=0,
-            color="green",
-            type="scatter",
-            marker="o",
-        ),
-        mpf.make_addplot(
-            df["high_pivots"],
-            panel=0,
-            color="red",
-            type="scatter",
-            marker="o",
-        ),
-    ]
+    lines = generate_trend_lines(low_series=df["low"], high_series=df["high"])
 
     x1 = df.index[0]
     x2 = df.index[-1]
@@ -62,7 +34,6 @@ def main():
     mpf.plot(
         df,
         type="candle",
-        addplot=ap,
         tight_layout=True,
         alines={
             "alines": [((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in lines],
