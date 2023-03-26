@@ -17,7 +17,7 @@ def main():
         ("low", "float64"),
         ("close", "float64"),
     ]
-    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=XRP_USDT&interval=1h&limit=100"
+    url = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=DASH_USDT&interval=1h&limit=100"
     response = requests.get(url)
 
     rows = response.json()
@@ -64,7 +64,10 @@ def main():
         type="candle",
         addplot=ap,
         tight_layout=True,
-        alines=[((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in lines],
+        alines={
+            "alines": [((x1, line.get_y(x1)), (x2, line.get_y(x2))) for line in lines],
+            "colors": ["g" if line.side == Side.LOW else "r" for line in lines],
+        },
     )
 
 

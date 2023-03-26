@@ -8,13 +8,8 @@ from tlines.utils import find_significant
 
 
 class GenerateALines:
-    def __init__(
-        self,
-        board: Board,
-        min_pivot_distance: float = 0.1,
-    ):
+    def __init__(self, board: Board):
         self.board = board
-        self.min_pivot_distance = min_pivot_distance
 
         # median distance between points
         self.band = max(
@@ -94,33 +89,34 @@ class GenerateALines:
             alines = [line for n, line in enumerate(alines) if n not in to_remove]
 
             for line in alines + hlines:
-                x1, y1 = self.board.translate(line.x1, line.y1)
-                x2, y2 = self.board.translate(line.x2, line.y2)
+                yield self._to_line(line)
 
-                x1 = Time.from_datetime(x1)
-                x2 = Time.from_datetime(x2)
+    def _to_line(self, line: LineCandidate):
+        x1, y1 = self.board.translate(line.x1, line.y1)
+        x2, y2 = self.board.translate(line.x2, line.y2)
 
-                a = (y2 - y1) / (x2 - x1)
-                b = y2 - a * x2
+        x1 = Time.from_datetime(x1)
+        x2 = Time.from_datetime(x2)
 
-                x_start = (
-                    list(
-                        sorted(line.pivots + line.pivots_opposite, key=lambda p: p[0])
-                    )[0][0]
-                    * self.board.x_step
-                    + self.board.x_start
-                )
+        a = (y2 - y1) / (x2 - x1)
+        b = y2 - a * x2
 
-                distances = [i[1] ** 2 for i in line.pivots + line.pivots_opposite]
-                width = math.sqrt(sum(distances) / len(distances))
+        x_start = (
+            list(sorted(line.pivots + line.pivots_opposite, key=lambda p: p[0]))[0][0]
+            * self.board.x_step
+            + self.board.x_start
+        )
 
-                yield Line(
-                    side=side,
-                    a=a,
-                    b=b,
-                    width=width * self.board.y_step,
-                    x_start=x_start,
-                )
+        distances = [i[1] ** 2 for i in line.pivots + line.pivots_opposite]
+        width = math.sqrt(sum(distances) / len(distances))
+
+        return Line(
+            side=line.side,
+            a=a,
+            b=b,
+            width=width * self.board.y_step,
+            x_start=x_start,
+        )
 
     def _filter_lines(self, lines, side: Side, min_pivots):
         seen = set()
@@ -155,7 +151,7 @@ class GenerateALines:
                 p1 = pivots[i]
                 p2 = pivots[j]
 
-                if p2 - p1 < self.board.size * self.min_pivot_distance:
+                if p2 - p1 < self.board.size / 10:
                     continue
 
                 line = LineCandidate(
