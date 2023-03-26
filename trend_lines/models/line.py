@@ -70,4 +70,4 @@ class LineCandidate:
         return (x - self.get_x(y)) * math.sin(self.angle_rad)
 
     def __str__(self):
-        return f"ALine[{int(self.x1)},{self.y1:.2f} {int(self.x2)},{self.y2:.2f} a{int(self.angle)}]"
+        return f"Line[{int(self.x1)},{self.y1:.2f} {int(self.x2)},{self.y2:.2f} a{int(self.angle)}]"
