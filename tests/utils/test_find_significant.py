@@ -25,3 +25,6 @@ def test_find_significant():
 
     result = find_significant(start=18000, stop=28000)
     assert result == [20000, 25000]
+
+    result = find_significant(start=1, stop=100)
+    assert result == [1, 10, 100]

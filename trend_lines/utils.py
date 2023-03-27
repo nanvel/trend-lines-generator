@@ -46,17 +46,17 @@ def find_significant(start: float, stop: float):
         value_str = f"{value:f}".replace(".", "").replace("0", "")
         value = value / 10**dot_distance
 
+        value_str = value_str.strip("0")
+
         if value_str == "1":
             results.append((value, 0))
         elif value_str == "5":
             results.append((value, 1))
         elif value_str == "25":
             results.append((value, 2))
-        elif value_str == "50":
+        elif value_str == "5":
             results.append((value, 2))
         elif value_str == "2":
-            results.append((value, 2))
-        elif value_str == "20":
             results.append((value, 2))
 
     if not results:
