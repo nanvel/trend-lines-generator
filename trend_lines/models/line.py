@@ -56,6 +56,10 @@ class LineCandidate:
     def angle(self):
         return self.angle_rad * 180 / math.pi
 
+    @property
+    def is_horizontal(self) -> bool:
+        return self.a == 0
+
     def get_y(self, x: int) -> float:
         return self.a * x + self.b
 

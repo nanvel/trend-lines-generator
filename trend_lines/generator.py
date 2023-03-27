@@ -218,7 +218,8 @@ class Generator:
         for pivot, distance in line.pivots_opposite:
             distances.append(distance + self.band)
 
-        distances = list(sorted(distances))[2:]
+        skip_first = 1 if line.is_horizontal else 2
+        distances = list(sorted(distances))[skip_first:]
         q = 0.0
         min_distance = self.band / 10.0
         for n, distance in enumerate(distances):
