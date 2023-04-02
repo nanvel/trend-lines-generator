@@ -25,6 +25,9 @@ class Line:
     def is_horizontal(self) -> bool:
         return not self.a
 
+    def __hash__(self):
+        return hash((self.side, self.a, self.b))
+
 
 class LineCandidate:
     def __init__(

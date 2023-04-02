@@ -52,3 +52,7 @@ if __name__ == "__main__":
 ```
 
 ![trend lines](https://github.com/nanvel/trend-lines/raw/master/docs/trend_lines.png)
+
+For each time in the serie:
+
+![trend lines daily](https://github.com/nanvel/trend-lines/raw/master/docs/trend_lines_daily.png)
