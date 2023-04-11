@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trend-lines-generator"
-version = "0.1.1"
+version = "0.1.2"
 description = "Trend lines generator."
 authors = ["Oleksandr Polieno <polyenoom@gmail.com>"]
 license = "MIT"
