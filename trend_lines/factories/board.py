@@ -15,9 +15,19 @@ class BoardFactory:
         high_series = high_series.copy()
 
         x_is_datetime = isinstance(low_series.index[0], datetime.datetime)
+
+        dtype_str = str(low_series.index.dtype)
+        divider = 1
+        if "ns" in dtype_str:
+            divider = 1_000_000_000
+        elif "us" in dtype_str:
+            divider = 1_000_000
+        elif "ms" in dtype_str:
+            divider = 1_000
+
         if x_is_datetime:
-            low_series.index = low_series.index.astype(int) // 10**9
-            high_series.index = high_series.index.astype(int) // 10**9
+            low_series.index = low_series.index.astype(int) // divider
+            high_series.index = high_series.index.astype(int) // divider
 
         x_step = int(low_series.index.to_series().diff().min())
         x_start = low_series.index.min()

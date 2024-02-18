@@ -26,7 +26,7 @@ class Line:
         return not self.a
 
     def __hash__(self):
-        return hash((self.side, self.a, self.b))
+        return hash((self.side.value, self.a, self.b))
 
 
 class LineCandidate:

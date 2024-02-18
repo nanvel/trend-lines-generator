@@ -40,18 +40,18 @@ class Board:
 
     @lru_cache
     def get_pivots(self, side: Side) -> List[int]:
-        repetitive = self.df[self.df[side].shift() == self.df[side]].index
+        repetitive = self.df[self.df[side.value].shift() == self.df[side.value]].index
 
         df = self.df.drop(repetitive)
 
-        df[f"pivot_{side}"] = (
-            df[side]
+        df[f"pivot_{side.value}"] = (
+            df[side.value]
             .rolling(3, center=True)
-            .apply(getattr(self, f"_is_{side}"))
+            .apply(getattr(self, f"_is_{side.value}"))
             .replace(0, NaN)
         )
 
-        pivots = list(df[df[f"pivot_{side}"].notnull()].index)[:-1]
+        pivots = list(df[df[f"pivot_{side.value}"].notnull()].index)[:-1]
 
         to_remove = set()
         for p in pivots:

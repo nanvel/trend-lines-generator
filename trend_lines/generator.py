@@ -13,8 +13,8 @@ class Generator:
 
         # median distance between points
         self.band = max(
-            np.sqrt(1 + np.square(board.df[Side.LOW].diff())).median(),
-            np.sqrt(1 + np.square(board.df[Side.HIGH].diff())).median(),
+            np.sqrt(1 + np.square(board.df[Side.LOW.value].diff())).median(),
+            np.sqrt(1 + np.square(board.df[Side.HIGH.value].diff())).median(),
         )
 
         self.pivots = {
