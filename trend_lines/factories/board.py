@@ -65,8 +65,8 @@ class BoardFactory:
         )
         df.drop(columns=[f"{Side.LOW}_x", f"{Side.HIGH}_x"], inplace=True)
 
-        df[Side.LOW].interpolate(inplace=True)
-        df[Side.HIGH].interpolate(inplace=True)
+        df[Side.LOW.value].interpolate(inplace=True)
+        df[Side.HIGH.value].interpolate(inplace=True)
 
         y_min = low_series.min()
         y_max = high_series.max()
@@ -75,8 +75,8 @@ class BoardFactory:
         dv = (y_max - y_min) / samples
 
         df.index = range(samples)
-        df[Side.LOW] = (df[Side.LOW] - y_min) / dv
-        df[Side.HIGH] = (df[Side.HIGH] - y_min) / dv
+        df[Side.LOW.value] = (df[Side.LOW.value] - y_min) / dv
+        df[Side.HIGH.value] = (df[Side.HIGH.value] - y_min) / dv
 
         return Board(
             df=df,
