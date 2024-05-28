@@ -65,8 +65,8 @@ class BoardFactory:
         )
         df.drop(columns=[f"{Side.LOW}_x", f"{Side.HIGH}_x"], inplace=True)
 
-        df[Side.LOW.value].interpolate(inplace=True)
-        df[Side.HIGH.value].interpolate(inplace=True)
+        df[Side.LOW.value] = df[Side.LOW.value].interpolate()
+        df[Side.HIGH.value] = df[Side.HIGH.value].interpolate()
 
         y_min = low_series.min()
         y_max = high_series.max()
