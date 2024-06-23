@@ -1,7 +1,7 @@
 import datetime
 
 from pandas import DataFrame, Series
-from numpy import NaN
+from numpy import nan
 
 from ..models import Board, Side
 
@@ -36,7 +36,7 @@ class BoardFactory:
         df = (
             DataFrame(
                 (
-                    [i, NaN, NaN]
+                    [i, nan, nan]
                     for i in range(
                         x_start,
                         x_stop + x_step,
